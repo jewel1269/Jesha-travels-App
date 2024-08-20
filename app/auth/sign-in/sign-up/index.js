@@ -9,8 +9,11 @@ import {
   TouchableOpacity,
   Alert,
   Animated,
+  ToastAndroid,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../../../configs/Firebase/Firebase";
 
 // Create a component
 const SignUp = () => {
@@ -20,13 +23,14 @@ const SignUp = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fadeAnim] = useState(new Animated.Value(0)); // Initial value for opacity: 0
-  const router = useRouter()
-  const navigation = useNavigation()
+  const router = useRouter();
+  const navigation = useNavigation();
+
   // Fade in animation
   React.useEffect(() => {
     navigation.setOptions({
-      headerShown: false
-    })
+      headerShown: false,
+    });
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1000,
@@ -39,37 +43,40 @@ const SignUp = () => {
     const phoneRegex = /^[0-9]{10}$/;
 
     if (name.trim() === "") {
-      Alert.alert("Validation Error", "Name is required");
+      ToastAndroid.show("Name is required", ToastAndroid.SHORT);
       return false;
     }
     if (email.trim() === "") {
-      Alert.alert("Validation Error", "Email is required");
+      ToastAndroid.show("Email is required", ToastAndroid.SHORT);
       return false;
     }
     if (!emailRegex.test(email)) {
-      Alert.alert("Validation Error", "Enter a valid email address");
+      ToastAndroid.show("Enter a valid email address", ToastAndroid.SHORT);
       return false;
     }
     if (phone.trim() === "") {
-      Alert.alert("Validation Error", "Phone number is required");
+      ToastAndroid.show("Phone number is required", ToastAndroid.SHORT);
       return false;
     }
     if (!phoneRegex.test(phone)) {
-      Alert.alert("Validation Error", "Enter a valid 10-digit phone number");
+      ToastAndroid.show(
+        "Enter a valid 10-digit phone number",
+        ToastAndroid.SHORT
+      );
       return false;
     }
     if (username.trim() === "") {
-      Alert.alert("Validation Error", "Username is required");
+      ToastAndroid.show("Username is required", ToastAndroid.SHORT);
       return false;
     }
     if (password.trim() === "") {
-      Alert.alert("Validation Error", "Password is required");
+      ToastAndroid.show("Password is required", ToastAndroid.SHORT);
       return false;
     }
     if (password.length < 6) {
-      Alert.alert(
-        "Validation Error",
-        "Password must be at least 6 characters long"
+      ToastAndroid.show(
+        "Password must be at least 6 characters long",
+        ToastAndroid.SHORT
       );
       return false;
     }
@@ -80,33 +87,31 @@ const SignUp = () => {
     if (!validateInputs()) return;
 
     try {
-      const user = new User();
-      user.set("username", username);
-      user.set("password", password);
-      user.set("email", email);
-      user.set("name", name);
-      user.set("phone", phone);
+      await createUserWithEmailAndPassword(auth, email, password)
+      .then(res=>{
+        ToastAndroid.show(
+          `User ${username} was successfully created!`,
+          ToastAndroid.SHORT
+        );
 
-      const createdUser = await user.signUp();
-      Alert.alert(
-        "Success!",
-        `User ${createdUser.get("username")} was successfully created!`
-      );
-      return true;
+        router.replace('auth/sign-in')
+
+      })
+      
     } catch (error) {
-      Alert.alert("Error!", error.message);
-      return false;
+      ToastAndroid.show(error.message, ToastAndroid.SHORT);
     }
   };
 
   return (
     <>
       <TouchableOpacity
-      onPress={()=>router.back()}
-       style={{
-      paddingTop: 70,
-      paddingLeft: 10
-      }}>
+        onPress={() => router.back()}
+        style={{
+          paddingTop: 70,
+          paddingLeft: 10,
+        }}
+      >
         <Ionicons name="arrow-back-outline" size={26} color="black" />
       </TouchableOpacity>
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
@@ -115,22 +120,22 @@ const SignUp = () => {
             fontFamily: "outfit-bold",
             fontSize: 38,
             marginTop: -20,
-            marginLeft: -24,
+            marginRight: 99,
             marginBottom: 20,
           }}
         >
-          Welcome Jesha Teavels
+          Welcome Jesha Travels 
         </Text>
         <Text
           style={{
             textAlign: "start",
-            marginLeft: -30,
+           
             fontFamily: "outfit-medium",
             fontSize: 28,
             marginTop: -20,
           }}
         >
-          Create a new account and fill up this from
+          Create a new account and fill up this form
         </Text>
         <Text style={styles.headerText}>Sign Up</Text>
         <View style={styles.inputRow}>
@@ -184,7 +189,7 @@ const SignUp = () => {
               marginTop: 5,
             }}
           >
-            If you have Account then{" "}
+            If you have an account then{" "}
             <Text
               onPress={() => router.replace("auth/sign-in")}
               style={{
@@ -204,7 +209,7 @@ const SignUp = () => {
 // Define your styles
 const styles = StyleSheet.create({
   container: {
-    marginTop:90,
+    marginTop: 40,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f5f5f5",
@@ -213,9 +218,8 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 28,
     marginBottom: 20,
-    
     color: "#333",
-    fontFamily:'outfit-bold'
+    fontFamily: "outfit-bold",
   },
   inputRow: {
     flexDirection: "row",
@@ -252,7 +256,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 18,
-    fontFamily:'outfit-bold'
+    fontFamily: "outfit-bold",
   },
 });
 

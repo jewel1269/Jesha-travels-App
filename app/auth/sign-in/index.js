@@ -12,14 +12,17 @@ import {
   Switch,
   Alert,
   TouchableOpacity,
+  ToastAndroid,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../../configs/Firebase/Firebase";
 
 // Create a component
 const SignIn = () => {
   const navigation = useNavigation();
   const [click, setClick] = useState(false);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter()
 
@@ -30,26 +33,30 @@ const SignIn = () => {
   }, []);
 
   const validateInputs = () => {
-    if (username.trim() === "") {
-      Alert.alert("Validation Error", "Username or email is required");
+    if (email.trim() === "") {
+      ToastAndroid.show("Validation Error", "Username or email is required", ToastAndroid.SHORT);
       return false;
     }
     if (password.trim() === "") {
-      Alert.alert("Validation Error", "Password is required");
+      ToastAndroid.show("Validation Error", "Password is required", ToastAndroid.SHORT);
       return false;
     }
     return true;
   };
 
-  const handleLogin = () => {
-    if (validateInputs()) {
-      // Perform login logic here
-      Alert.alert(
-        "Login Successful!",
-        "See you on my Instagram if you have questions: must_ait6"
-      );
+  const handleLogin = async () => {
+    if (!validateInputs()) return;
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      ToastAndroid.show(`User successfully logged in!`, ToastAndroid.SHORT);
+      // router.replace('/home')
+    } catch (error) {
+      ToastAndroid.show(`Error: ${error.message}`, ToastAndroid.SHORT);
     }
   };
+  
+
 
   return (
     <View style={{ padding: 25 }}>
@@ -68,20 +75,14 @@ const SignIn = () => {
       </Text>
 
       <SafeAreaView style={styles.containerOne}>
-        <Image
-          style={styles.image}
-          source={
-            "../../../assets/images/login-button-3d-icon-download-in-png-blend-fbx-gltf-file-formats--log-access-interface-pack-crime-security-icons-6559365.webp"
-          }
-          resizeMode="contain"
-        />
+       
         <Text style={styles.title}>Login</Text>
         <View style={styles.inputView}>
           <TextInput
             style={styles.input}
             placeholder="EMAIL OR USERNAME"
-            value={username}
-            onChangeText={setUsername}
+            value={email}
+            onChangeText={setEmail}
             autoCorrect={false}
             autoCapitalize="none"
           />
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
   heading: {
     fontFamily: "outfit-bold",
     fontSize: 30,
-    marginTop: 60,
+    marginTop: 30,
   },
   subHeading: {
     fontFamily: "outfit-bold",
@@ -141,8 +142,8 @@ const styles = StyleSheet.create({
     color: 'gray'
   },
   containerOne: {
-    alignItems: "center",
-    marginTop: -60
+    
+   
   },
   image: {
     height: 160,
